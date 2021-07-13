@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  PatientAppTask
+
+  Sample SAM Template for PatientAppTask
+Globals:
+  Function:
+      Runtime: java11
+      MemorySize: 512
+      Timeout: 30
+      Environment:
+        Variables:
+          PATIENT_TABLE: !Ref PatientTable
+
+Resources:
+  PatientTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: PatientId
+        Type: Number
+     
+
+  AddParientFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: PatientAppTask
+      Handler: com.aws.Patient.APIs.AddPatient::addPatient
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PatientTable
+      Events:
+        PatientEvents:
+          Type: Api
+          Properties:
+            Path: /patient
+            Method: POST
+  GetPatientFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: PatientAppTask
+      Handler: com.aws.Patient.APIs.GetPatientList::getPatient
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref PatientTable
+      Events:
+        PatientEvents:
+          Type: Api
+          Properties:
+            Path: /patient
+            Method: GET
+  UpdatePatientFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: PatientAppTask
+      Handler: com.aws.Patient.APIs.UpdatePatient::updatePatient
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PatientTable
+      Events:
+        PatientEvents:
+          Type: Api   
+          Properties:
+            Path: /patient/{id}
+            Method: PUT
+  DeletePatientFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: PatientAppTask
+      Handler: com.aws.Patient.APIs.DeletePatient::deletePatient
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PatientTable
+      Events:
+        PatientEvents:
+          Type: Api   
+          Properties:
+            Path: /patient/{id}
+            Method: DELETE
